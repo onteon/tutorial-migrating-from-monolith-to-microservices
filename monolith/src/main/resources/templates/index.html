@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <title>Products</title>
+</head>
+<body>
+
+<div class="container">
+    <div class="row companies">
+        <div class="col">
+            <h1>Companies</h1>
+            <div class="list">
+                <div class="row">
+                    <div class="col-1">
+                        <label class="form-label">Id</label>
+                    </div>
+                    <div class="col-9">
+                        <label class="form-label">Company name</label>
+                    </div>
+                </div>
+            </div>
+            <form class="new-company-form mt-4">
+                <h2>Create new company</h2>
+                <div class="mb-3">
+                    <label for="company-name" class="form-label">Company name</label>
+                    <input type="text" class="form-control" id="company-name">
+                </div>
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row products mt-5">
+        <div class="col">
+            <h1>Products</h1>
+            <div class="list">
+                <div class="row">
+                    <div class="col-1">
+                        <label class="form-label">Id</label>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label">Product name</label>
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Amount</label>
+                    </div>
+                    <div class="col-2">
+                        <label class="form-label">Company id</label>
+                    </div>
+                </div>
+            </div>
+            <form class="new-product-form mt-4">
+                <h2>Create new product</h2>
+                <div class="mb-3">
+                    <label for="product-name" class="form-label">Product name</label>
+                    <input type="text" class="form-control" id="product-name">
+                </div>
+                <div class="mb-3">
+                    <label for="product-amount" class="form-label">Product amount</label>
+                    <input type="number" min="0" value="10" class="form-control" id="product-amount">
+                </div>
+                <div class="mb-3">
+                    <label for="product-company" class="form-label">Product company</label>
+                    <select id="product-company" class="form-control">
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row reports mt-5">
+        <div class="col">
+            <h1>Reports</h1>
+            <div class="list">
+                <div class="row">
+                    <div class="col-1">
+                        <label class="form-label">Id</label>
+                    </div>
+                    <div class="col-5">
+                        <label class="form-label">Report name</label>
+                    </div>
+                    <div class="col-3">
+                        <label class="form-label">Status</label>
+                    </div>
+                </div>
+            </div>
+            <form class="new-report-form mt-4">
+                <h2>Create new report</h2>
+                <div class="mb-3">
+                    <label for="report-name" class="form-label">Report name</label>
+                    <input type="text" class="form-control" id="report-name">
+                </div>
+                <button type="submit" class="btn btn-primary">Create</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
+        crossorigin="anonymous"></script>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+        integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI="
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    const baseUrl = '/monolith';
+    const companyApiBaseUrl = `${baseUrl}/api/v1/companies`;
+    const productApiBaseUrl = `${baseUrl}/api/v1/products`;
+    const reportApiBaseUrl = `${baseUrl}/api/v1/reports`;
+
+    function initCompaniesForm() {
+        $(".new-company-form").submit(e => {
+            e.preventDefault(e);
+            addCompany($("#company-name").val());
+        })
+    }
+
+    function initCompaniesList(companies) {
+        companies.forEach(company => {
+            const containerId = `company-${company.id}-container`;
+            const elementHtml = `
+                <div class="row mt-3">
+                    <div id="${containerId}" class="col">
+                        <div class="row">
+                            <div class="col-1 d-flex align-items-center">
+                                <div>${company.id}</div>
+                            </div>
+                            <div class="col-9 d-flex align-items-center">
+                                <input type="text" value="${company.name}" class="form-control name">
+                            </div>
+                            <div class="col-2 d-flex align-items-center">
+                                <button type="submit" class="btn btn-primary update mx-1">Update</button>
+                                <button type="submit" class="btn btn-danger delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $(".companies .list").append(elementHtml)
+            $(`#${containerId} .update`).on(
+                "click",
+                () => updateCompany(company.id, $(`#${containerId} .name`).val())
+            );
+            $(`#${containerId} .delete`).on("click", () => deleteCompany(company.id));
+        })
+    }
+
+    function addCompany(name) {
+        axios.post(companyApiBaseUrl, {name: name})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function updateCompany(id, name) {
+        axios.put(`${companyApiBaseUrl}/${id}`, {name: name})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function deleteCompany(companyId) {
+        axios.delete(`${companyApiBaseUrl}/${companyId}`)
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function initNewProductCompanyList(companies) {
+        companies.forEach(company => {
+            $("#product-company").append(`<option value="${company.id}">${company.name}</option>`)
+        })
+    }
+
+    function initProductsForm() {
+        $(".new-product-form").submit(e => {
+            e.preventDefault(e);
+            addProduct(
+                $("#product-name").val(),
+                $("#product-amount").val(),
+                $("#product-company").val()
+            );
+        })
+    }
+
+    function addProduct(name, amount, companyId) {
+        axios.post(productApiBaseUrl, {name: name, amount: amount, companyId: companyId})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function initProductsList(products, companies) {
+        products.forEach(product => {
+            const containerId = `product-${product.id}-container`;
+            const elementHtml = `
+                <div class="row mt-3">
+                    <div id="${containerId}" class="col">
+                        <div class="row">
+                            <div class="col-1 d-flex align-items-center">
+                                <div>${product.id}</div>
+                            </div>
+                            <div class="col-5 d-flex align-items-center">
+                                <input type="text" value="${product.name}" class="form-control name">
+                            </div>
+                            <div class="col-2 d-flex align-items-center">
+                                <input type="number" min="0" value="${product.amount}" class="form-control amount">
+                            </div>
+                            <div class="col-2 d-flex align-items-center">
+                                <select class="form-control company">
+                                    ${
+                                        companies
+                                            .map(company =>
+                                                product.companyId === company.id
+                                                    ? `<option selected="selected" value="${company.id}">${company.name}</option>`
+                                                    : `<option value="${company.id}">${company.name}</option>`
+                                            )
+                                            .join("")
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-2 d-flex align-items-center">
+                                <button type="submit" class="btn btn-primary update mx-1">Update</button>
+                                <button type="submit" class="btn btn-danger delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $(".products .list").append(elementHtml)
+            $(`#${containerId} .update`).on(
+                "click",
+                () => updateProduct(
+                    product.id,
+                    $(`#${containerId} .name`).val(),
+                    $(`#${containerId} .amount`).val(),
+                    $(`#${containerId} .company`).val()
+                )
+            );
+            $(`#${containerId} .delete`).on("click", () => deleteProduct(product.id));
+        })
+    }
+
+    function updateProduct(id, name, amount, companyId) {
+        axios.put(`${productApiBaseUrl}/${id}`, {name: name, amount: amount, companyId: companyId})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function deleteProduct(productId) {
+        axios.delete(`${productApiBaseUrl}/${productId}`)
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function initReportsForm() {
+        $(".new-report-form").submit(e => {
+            e.preventDefault(e);
+            addReport(
+                $("#report-name").val()
+            );
+        })
+    }
+
+    function addReport(name) {
+        axios.post(reportApiBaseUrl, {name: name})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function initReportsList(reports) {
+        reports.forEach(report => {
+            const containerId = `report-${report.id}-container`;
+            const elementHtml = `
+                <div class="row mt-3">
+                    <div id="${containerId}" class="col">
+                        <div class="row">
+                            <div class="col-1 d-flex align-items-center">
+                                <div>${report.id}</div>
+                            </div>
+                            <div class="col-5 d-flex align-items-center">
+                                <input type="text" value="${report.name}" class="form-control name">
+                            </div>
+                            <div class="col-3 d-flex align-items-center">
+                                <div>${report.status}</div>
+                            </div>
+                            <div class="col-3 d-flex align-items-center">
+                                <button type="submit" class="btn btn-secondary download mx-1">Download</button>
+                                <button type="submit" class="btn btn-primary update mx-1">Update</button>
+                                <button type="submit" class="btn btn-danger delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $(".reports .list").append(elementHtml)
+            $(`#${containerId} .download`).on("click", () => window.location.href = `${reportApiBaseUrl}/${report.id}`);
+            $(`#${containerId} .update`).on(
+                "click",
+                () => updateReport(report.id, $(`#${containerId} .name`).val())
+            );
+            $(`#${containerId} .delete`).on("click", () => deleteReport(report.id));
+        })
+    }
+
+    function updateReport(id, name) {
+        axios.put(`${reportApiBaseUrl}/${id}`, {name: name})
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    function deleteReport(id) {
+        axios.delete(`${reportApiBaseUrl}/${id}`)
+            .then(() => {
+                document.location.reload(true)
+            })
+            .catch(error => {
+                console.log(error);
+            });
+    }
+
+    $(document).ready(function () {
+        initCompaniesForm();
+
+        axios.get(companyApiBaseUrl)
+            .then(response => {
+                const companies = response.data.sort((a, b) => a.id - b.id);
+                initCompaniesList(companies);
+                initNewProductCompanyList(companies);
+                initProductsForm();
+                axios.get(productApiBaseUrl)
+                    .then(response => {
+                        const products = response.data.sort((a, b) => a.id - b.id);
+                        initProductsList(products, companies);
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    })
+            })
+            .catch(error => {
+                console.log(error);
+            })
+
+        initReportsForm();
+        axios.get(reportApiBaseUrl)
+            .then(response => {
+                const reports = response.data.sort((a, b) => a.id - b.id);
+                initReportsList(reports);
+            })
+            .catch(error => {
+                console.log(error);
+            })
+    });
+</script>
+
+</body>
+</html>
