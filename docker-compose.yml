@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  onteoncc-master:
+    image: onteon/control-center:1.2.0
+    ports:
+      - "8050:8050"
+      - "9096:9096"
+      - "27017:27017"
+      - "27018:27018"
+      - "27019:27019"
+    environment:
+      ONTEON_MONITORING_ENABLED: "false"
+    command: ["./start-master.sh"]
+  onteon-node-manager-1:
+    image: onteon/node-manager:1.2.0
+    privileged: true
+    tty: true
+    depends_on:
+      - "onteoncc-master"
+    ports:
+      - "8020:8020"
+  onteon-node-manager-2:
+    image: onteon/node-manager:1.2.0
+    privileged: true
+    tty: true
+    depends_on:
+      - "onteoncc-master"
+    ports:
+      - "8021:8021"
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+  onteoncli:
+    profiles: ["cli-only"]
+    image: onteon/onteoncli-with-demo-apps:1.2.0
+    stdin_open: true
+    tty: true
+    volumes:
+      - ".:/opt/onteon"
+    depends_on:
+      - "onteoncc-master"

@@ -1,0 +1,6 @@
+application: monolith:1.0.0
+numberOfInstances: 2
+scripts:
+  checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1
+  selectNodeForNewApplicationInstance: defaultApplicationInstancesCountOnlySNFNAIV1
+  selectApplicationInstanceToRemove: defaultApplicationInstancesCountOnlySAITRV1
