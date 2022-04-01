@@ -13,5 +13,6 @@ public interface CompanyService {
     void create(final @NonNull CompanyDTO companyDTO);
     void update(final @NonNull CompanyDTO companyDTO) throws NotFoundCompanyException;
     void deleteById(final @NonNull Long id) throws NotFoundCompanyException;
+    CompanyDTO getById(final @NonNull Long id);
     List<CompanyDTO> getAll();
 }

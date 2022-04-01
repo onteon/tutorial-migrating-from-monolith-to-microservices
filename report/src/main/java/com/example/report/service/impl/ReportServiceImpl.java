@@ -1,10 +1,10 @@
 package com.example.report.service.impl;
 
-import com.example.report.repository.entity.CompanyEntity;
-import com.example.report.repository.entity.ProductEntity;
+import com.example.report.remote.company.interfaces.CompanyRemoteService;
+import com.example.report.remote.company.pojo.response.CompanyResponse;
+import com.example.report.remote.product.interfaces.ProductRemoteService;
+import com.example.report.remote.product.response.ProductResponse;
 import com.example.report.repository.entity.ReportEntity;
-import com.example.report.repository.interfaces.CompanyRepository;
-import com.example.report.repository.interfaces.ProductRepository;
 import com.example.report.repository.interfaces.ReportRepository;
 import com.example.report.service.dto.ReportDTO;
 import com.example.report.service.dto.ReportInfoDTO;
@@ -33,23 +33,23 @@ import java.util.stream.Collectors;
 @Service
 public class ReportServiceImpl implements ReportService {
     private final ReportRepository reportRepository;
-    private final CompanyRepository companyRepository;
-    private final ProductRepository productRepository;
     private final ReportConverter reportConverter;
+    private final CompanyRemoteService companyRemoteService;
+    private final ProductRemoteService productRemoteService;
     private final Font h1;
     private final Font h2;
     private final Font h3;
 
     public ReportServiceImpl(
             final ReportRepository reportRepository,
-            final CompanyRepository companyRepository,
-            final ProductRepository productRepository,
-            final ReportConverter reportConverter
+            final ReportConverter reportConverter,
+            final CompanyRemoteService companyRemoteService,
+            final ProductRemoteService productRemoteService
     ) {
         this.reportRepository = reportRepository;
-        this.companyRepository = companyRepository;
-        this.productRepository = productRepository;
         this.reportConverter = reportConverter;
+        this.companyRemoteService = companyRemoteService;
+        this.productRemoteService = productRemoteService;
 
         h1 = new Font();
         h1.setSize(22);
@@ -67,8 +67,8 @@ public class ReportServiceImpl implements ReportService {
     @Override
     public void create(final @NonNull ReportDTO reportDTO) {
         final ReportEntity entity = reportRepository.save(reportConverter.toNewEntity(reportDTO));
-        final List<CompanyEntity> companies = companyRepository.findAll();
-        final List<ProductEntity> products = productRepository.findAll();
+        final List<CompanyResponse> companies = companyRemoteService.getAll();
+        final List<ProductResponse> products = productRemoteService.getAll();
 
         Document document = new Document();
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -88,8 +88,8 @@ public class ReportServiceImpl implements ReportService {
 
     private void addCompanyPage(
             final Document document,
-            final CompanyEntity company,
-            final List<ProductEntity> products
+            final CompanyResponse company,
+            final List<ProductResponse> products
     ) {
         addProducts(document, company, products);
         addSummary(document, company, products);
@@ -98,8 +98,8 @@ public class ReportServiceImpl implements ReportService {
 
     private void addProducts(
             final Document document,
-            final CompanyEntity company,
-            final List<ProductEntity> products
+            final CompanyResponse company,
+            final List<ProductResponse> products
     ) {
         document.add(new Paragraph(company.getName(), h1));
         document.add(new Paragraph("Products", h2));
@@ -111,8 +111,7 @@ public class ReportServiceImpl implements ReportService {
         table.addCell(new Paragraph("Amount", h3));
 
         products.stream()
-                .filter(product -> Objects.nonNull(product.getCompany()))
-                .filter(product -> Objects.equals(product.getCompany().getId(), company.getId()))
+                .filter(product -> Objects.equals(product.getCompanyId(), company.getId()))
                 .forEach(product -> {
                     table.addCell(String.valueOf(product.getId()));
                     table.addCell(product.getName());
@@ -123,19 +122,17 @@ public class ReportServiceImpl implements ReportService {
 
     private void addSummary(
             final Document document,
-            final CompanyEntity company,
-            final List<ProductEntity> products
+            final CompanyResponse company,
+            final List<ProductResponse> products
     ) {
         document.add(new Paragraph("Summary", h2));
         final long numberOfProducts = products.stream()
-                .filter(product -> Objects.nonNull(product.getCompany()))
-                .filter(product -> Objects.equals(product.getCompany().getId(), company.getId()))
+                .filter(product -> Objects.equals(product.getCompanyId(), company.getId()))
                 .count();
 
         final int summedAmounts = products.stream()
-                .filter(product -> Objects.nonNull(product.getCompany()))
-                .filter(product -> Objects.equals(product.getCompany().getId(), company.getId()))
-                .mapToInt(ProductEntity::getAmount)
+                .filter(product -> Objects.equals(product.getCompanyId(), company.getId()))
+                .mapToInt(ProductResponse::getAmount)
                 .sum();
 
         document.add(new Paragraph("Products: \t" + numberOfProducts));

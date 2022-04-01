@@ -21,6 +21,5 @@ public class ProductEntity {
 
     private int amount;
 
-    @ManyToOne
-    private CompanyEntity company;
+    private Long company;
 }

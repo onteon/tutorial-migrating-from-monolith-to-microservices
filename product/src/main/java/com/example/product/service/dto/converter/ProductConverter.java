@@ -1,19 +1,17 @@
 package com.example.product.service.dto.converter;
 
-import com.example.product.repository.entity.CompanyEntity;
 import com.example.product.repository.entity.ProductEntity;
 import com.example.product.service.dto.ProductDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * @author Patryk Borchowiec
  */
 @Component
 public class ProductConverter {
-    public ProductEntity toNewEntity(final ProductDTO productDTO, final CompanyEntity companyEntity) {
+    public ProductEntity toNewEntity(final ProductDTO productDTO, final Long companyId) {
         if (Objects.isNull(productDTO)) {
             return null;
         }
@@ -21,12 +19,12 @@ public class ProductConverter {
         final ProductEntity productEntity = new ProductEntity();
         productEntity.setName(productDTO.getName());
         productEntity.setAmount(productDTO.getAmount());
-        productEntity.setCompany(companyEntity);
+        productEntity.setCompany(companyId);
 
         return productEntity;
     }
 
-    public ProductEntity toEntity(final ProductDTO productDTO, final CompanyEntity companyEntity) {
+    public ProductEntity toEntity(final ProductDTO productDTO, final Long companyId) {
         if (Objects.isNull(productDTO)) {
             return null;
         }
@@ -35,7 +33,7 @@ public class ProductConverter {
         productEntity.setId(productDTO.getId());
         productEntity.setName(productDTO.getName());
         productEntity.setAmount(productDTO.getAmount());
-        productEntity.setCompany(companyEntity);
+        productEntity.setCompany(companyId);
 
         return productEntity;
     }
@@ -49,7 +47,7 @@ public class ProductConverter {
                 productEntity.getId(),
                 productEntity.getName(),
                 productEntity.getAmount(),
-                Optional.ofNullable(productEntity.getCompany()).map(CompanyEntity::getId).orElse(null)
+                productEntity.getCompany()
         );
     }
 }

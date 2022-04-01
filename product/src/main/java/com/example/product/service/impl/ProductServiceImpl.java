@@ -1,8 +1,8 @@
 package com.example.product.service.impl;
 
-import com.example.product.repository.entity.CompanyEntity;
+import com.example.product.remote.company.interfaces.CompanyRemoteService;
+import com.example.product.remote.company.pojo.response.CompanyResponse;
 import com.example.product.repository.entity.ProductEntity;
-import com.example.product.repository.interfaces.CompanyRepository;
 import com.example.product.repository.interfaces.ProductRepository;
 import com.example.product.service.dto.ProductDTO;
 import com.example.product.service.dto.converter.ProductConverter;
@@ -10,7 +10,9 @@ import com.example.product.service.exception.NotFoundCompanyException;
 import com.example.product.service.exception.NotFoundProductException;
 import com.example.product.service.interfaces.ProductService;
 import lombok.NonNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -21,42 +23,57 @@ import java.util.stream.Collectors;
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final CompanyRepository companyRepository;
     private final ProductConverter productConverter;
+    private final CompanyRemoteService companyRemoteService;
 
     public ProductServiceImpl(
             final ProductRepository productRepository,
-            final CompanyRepository companyRepository,
-            final ProductConverter productConverter
-    ) {
+            final ProductConverter productConverter,
+            CompanyRemoteService companyRemoteService) {
         this.productRepository = productRepository;
-        this.companyRepository = companyRepository;
         this.productConverter = productConverter;
+        this.companyRemoteService = companyRemoteService;
     }
 
     @Override
     public void create(final @NonNull ProductDTO productDTO) {
-        final CompanyEntity companyEntity = companyRepository.findById(productDTO.getCompanyId())
-                .orElseThrow(() -> new NotFoundCompanyException(
-                        String.format("Not found company of id %s.", productDTO.getCompanyId())
-                ));
+        final CompanyResponse companyResponse;
+        try {
+            companyResponse = companyRemoteService.getById(productDTO.getCompanyId());
+        } catch (final ResponseStatusException e) {
+            if (e.getStatus().equals(HttpStatus.NOT_FOUND)) {
+                throw new NotFoundCompanyException(
+                        String.format("Not found company of id %s.", productDTO.getCompanyId()),
+                        e
+                );
+            }
+            throw e;
+        }
 
-        final ProductEntity productEntity = productConverter.toNewEntity(productDTO, companyEntity);
+        final ProductEntity productEntity = productConverter.toNewEntity(productDTO, companyResponse.getId());
         productRepository.save(productEntity);
     }
 
     @Override
     public void update(final @NonNull ProductDTO productDTO) {
-        final CompanyEntity companyEntity = companyRepository.findById(productDTO.getCompanyId())
-                .orElseThrow(() -> new NotFoundCompanyException(
-                        String.format("Not found company of id %s.", productDTO.getCompanyId())
-                ));
+        final CompanyResponse companyResponse;
+        try {
+            companyResponse = companyRemoteService.getById(productDTO.getCompanyId());
+        } catch (final ResponseStatusException e) {
+            if (e.getStatus().equals(HttpStatus.NOT_FOUND)) {
+                throw new NotFoundCompanyException(
+                        String.format("Not found company of id %s.", productDTO.getCompanyId()),
+                        e
+                );
+            }
+            throw e;
+        }
 
         if (!productRepository.existsById(productDTO.getId())) {
             throw new NotFoundProductException(String.format("Not found product with id %s.", productDTO.getId()));
         }
 
-        final ProductEntity productEntity = productConverter.toEntity(productDTO, companyEntity);
+        final ProductEntity productEntity = productConverter.toEntity(productDTO, companyResponse.getId());
         productRepository.save(productEntity);
     }
 

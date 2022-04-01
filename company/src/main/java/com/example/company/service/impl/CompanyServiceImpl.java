@@ -51,6 +51,13 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
+    public CompanyDTO getById(final @NonNull Long id) {
+        return companyRepository.findById(id)
+                .map(companyConverter::toDTO)
+                .orElseThrow(() -> new NotFoundCompanyException(String.format("Not found company with id %s", id)));
+    }
+
+    @Override
     public List<CompanyDTO> getAll() {
         return companyRepository.findAll().stream().map(companyConverter::toDTO).collect(Collectors.toList());
     }

@@ -4,6 +4,7 @@ import com.example.company.api.v1.pojo.converter.CompanyV1Converter;
 import com.example.company.api.v1.pojo.request.CreateCompanyV1Request;
 import com.example.company.api.v1.pojo.request.UpdateCompanyV1Request;
 import com.example.company.api.v1.pojo.response.CompanyV1Response;
+import com.example.company.service.dto.CompanyDTO;
 import com.example.company.service.exception.NotFoundCompanyException;
 import com.example.company.service.interfaces.CompanyService;
 import org.springframework.http.HttpStatus;
@@ -32,6 +33,21 @@ public class CompanyV1Controller {
     @PostMapping
     public void create(final @RequestBody @Valid CreateCompanyV1Request request) {
         companyService.create(companyV1Converter.toDTO(request));
+    }
+
+    @GetMapping("/{id}")
+    public CompanyV1Response getById(final @PathVariable long id) {
+        final CompanyDTO companyDTO;
+        try {
+            companyDTO = companyService.getById(id);
+        } catch (final NotFoundCompanyException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    String.format("Cannot update company due to: %s", e.getMessage())
+            );
+        }
+
+        return companyV1Converter.toResponse(companyDTO);
     }
 
     @GetMapping
