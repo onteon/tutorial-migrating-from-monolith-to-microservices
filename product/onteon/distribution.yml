@@ -1,4 +1,4 @@
-application: product:1.0.1
+application: product:1.0.2
 numberOfInstances: 2
 scripts:
   checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1
