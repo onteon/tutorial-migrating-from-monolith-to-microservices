@@ -1,7 +1,6 @@
 package com.example.report.api.v1.controller;
 
 import com.example.report.api.v1.pojo.converter.ReportV1Converter;
-import com.example.report.api.v1.pojo.request.CreateReportV1Request;
 import com.example.report.api.v1.pojo.request.UpdateReportV1Request;
 import com.example.report.api.v1.pojo.response.ReportV1Response;
 import com.example.report.service.dto.ReportDTO;
@@ -30,11 +29,6 @@ public class ReportV1Controller {
     public ReportV1Controller(final ReportService reportService, final ReportV1Converter reportV1Converter) {
         this.reportService = reportService;
         this.reportV1Converter = reportV1Converter;
-    }
-
-    @PostMapping
-    public void create(final @RequestBody @Valid CreateReportV1Request request) {
-        reportService.create(reportV1Converter.toDTO(request));
     }
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)

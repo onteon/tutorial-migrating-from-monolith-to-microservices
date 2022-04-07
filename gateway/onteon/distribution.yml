@@ -1,4 +1,4 @@
-application: gateway:1.0.0
+application: gateway:1.0.1
 numberOfInstances: 2
 scripts:
   checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1

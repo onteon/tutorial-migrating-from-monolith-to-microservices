@@ -1,4 +1,4 @@
-package com.example.report.api.v1.pojo.request;
+package com.example.gateway.report.controller.pojo.request;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-application: report:1.0.1
+application: report:1.1.0
 numberOfInstances: 2
 scripts:
   checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1
