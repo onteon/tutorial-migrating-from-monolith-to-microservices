@@ -1,4 +1,4 @@
-application: monolith:1.1.0
+application: frontend:1.0.0
 numberOfInstances: 2
 scripts:
   checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1
