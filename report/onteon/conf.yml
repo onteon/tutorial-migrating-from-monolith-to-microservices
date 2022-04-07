@@ -1,6 +1,6 @@
 app:
-  name: 'frontend'
-  version: '1.0.1'
+  name: 'report'
+  version: '1.0.0'
   appType: 'standard'
   procType: 'native'
   processProvider:
@@ -21,13 +21,13 @@ app:
       - '${ont_app_path}/bin/conf/server.xml'
     variables:
   serviceRepository:
-    healthCheckUrl: 'http://localhost:${ont_port_2}'
+    healthCheckUrl: 'http://localhost:${ont_port_2}/is-alive'
     entities:
       - entity:
           priority: 1
           port: ${ont_port_2}
           protocol:
             type: 'HTTP'
-            version: '2.0'
-          isExternal: true
+            version: '1.1'
+          isExternal: false
           isInternal: true

@@ -1,4 +1,4 @@
-application: frontend:1.0.1
+application: company:1.0.0
 numberOfInstances: 2
 scripts:
   checkIfNodeCanAcceptNewApplicationInstance: defaultAvailableNodeOnlyCINCANAIV1
